@@ -12,12 +12,17 @@ struct Question {
 
 class DNSQuestion {
 public:
+	DNSQuestion();
 	DNSQuestion(string qname, unsigned short qtype, unsigned short qclass);
 
 	string getQname();
 	unsigned short getQtype();
 	unsigned short getQclass();
 	Question getPacket();
+
+	void setQname(string qname);
+	void setQtype(unsigned short qtype);
+	void setQclass(unsigned short qclass);
 
 private:
 	string qname;

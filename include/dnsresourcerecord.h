@@ -4,7 +4,8 @@
 #include <p3.h>
 
 class DNSResourceRecord {
-	
+public:
+	DNSResourceRecord();
 };
 
 #endif

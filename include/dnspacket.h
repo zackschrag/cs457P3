@@ -16,8 +16,10 @@ struct Packet {
 
 class DNSPacket {
 public:
-	DNSPacket(string ip, string qname, short qtype, short qclass);
+	DNSPacket(string ip, DNSHeader h, DNSQuestion q, DNSResourceRecord ans, 
+    DNSResourceRecord auth, DNSResourceRecord addl);
 
+    string getIP();
     DNSHeader getHeader();
     DNSQuestion getQuestion();
     DNSResourceRecord getAnswer();
@@ -27,6 +29,7 @@ public:
 	Packet getPacket();
 
 private:
+    string ip;
 	DNSHeader header;
 	DNSQuestion question;
     DNSResourceRecord answer;

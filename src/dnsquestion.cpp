@@ -1,35 +1,46 @@
+#include <p3.h>
 #include <dnsquestion.h>
 
-DNSQuestion::DNSQuestion(string ip, string qname, short qtype, short qclass) {
-	this->ip = ip;
+DNSQuestion::DNSQuestion() {
+
+}
+
+DNSQuestion::DNSQuestion(string qname, unsigned short qtype, unsigned short qclass) {
 	this->qname = qname;
 	this->qtype = qtype;
 	this->qclass = qclass;
 }
 
-string DNSQuestion::getIP() {
-	return ip;
+void DNSQuestion::setQname(string qname) {
+	this->qname = qname;
+}
+
+void DNSQuestion::setQtype(unsigned short qtype) {
+	this->qtype = qtype;
+}
+
+void DNSQuestion::setQclass(unsigned short qclass) {
+	this->qclass = qclass;
 }
 
 string DNSQuestion::getQname() {
 	return qname;
 }
 
-short DNSQuestion::getQtype() {
+unsigned short DNSQuestion::getQtype() {
 	return qtype;
 }
 
-short DNSQuestion::getQclass() {
+unsigned short DNSQuestion::getQclass() {
 	return qclass;
 }
 
-QuestionPacket DNSQuestion::getPacket() {
-	QuestionPacket qp;
+Question DNSQuestion::getPacket() {
+	Question qp;
 	qp.qnameLength = htons(qname.length());
-	cout << "Length: " << qp.qnameLength << endl;
 	memcpy(&qp.qname, qname.c_str(), sizeof(qp.qname));
-	qp.qtype = htons(1);
-	qp.qclass = htons(1);
+	qp.qtype = htons((unsigned short)1);
+	qp.qclass = htons((unsigned short)1);
 	return qp;
 }
 

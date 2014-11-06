@@ -15,7 +15,7 @@ $(BINDIR)/main.o:	$(SRCDIR)/main.cpp $(HEADERSDIR)/p3.h $(BINDIR)/myresolver.o $
 $(BINDIR)/myresolver.o:	$(SRCDIR)/myresolver.cpp $(HEADERSDIR)/myresolver.h $(HEADERSDIR)/p3.h $(BINDIR)/client.o $(BINDIR)/dnspacket.o $(BINDIR)/dnsquestion.o $(BINDIR)/dnsheader.o $(BINDIR)/dnsresourcerecord.o 
 	g++ $(FLAGS) -I$(HEADERSDIR) $(SRCDIR)/myresolver.cpp -c -o $(BINDIR)/myresolver.o
 
-$(BINDIR)/dnspacket.o:	$(SRCDIR)/dnspacket.cpp $(HEADERSDIR)/dnspacket.h $(HEADERSDIR)/p3.h
+$(BINDIR)/dnspacket.o:	$(SRCDIR)/dnspacket.cpp $(HEADERSDIR)/dnspacket.h $(HEADERSDIR)/dnsheader.h $(HEADERSDIR)/dnsquestion.h $(HEADERSDIR)/dnsresourcerecord.h $(HEADERSDIR)/p3.h
 	g++ $(FLAGS) -I$(HEADERSDIR) $(SRCDIR)/dnspacket.cpp -c -o $(BINDIR)/dnspacket.o
 
 $(BINDIR)/dnsheader.o:	$(SRCDIR)/dnsheader.cpp $(HEADERSDIR)/dnsheader.h $(HEADERSDIR)/p3.h
