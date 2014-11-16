@@ -20,7 +20,7 @@ struct Question0 {
 int main(int arc, char **argv) {
 	Client c;
 	Header0 h;
-	h.id = htons(1);
+	h.id = htons(3);
 	h.flags = htons(0);
 	h.qdcount = htons(1);
 	h.ancount = htons(0);
@@ -44,54 +44,47 @@ int main(int arc, char **argv) {
 
 	cout << "---" << endl;
 	for (unsigned int i = 0; i < sizeof(h) + sizeof(q); i++) {
-		cout << queryBuffer[i];
+		cout << queryBuffer[i] << " ";
 	}
 	cout << "\n---" << endl;
 
-	// int sockfd;
- //    struct addrinfo hints, *servinfo, *p;
- //    int rv;
- //    int numbytes;
-
- //    memset(&hints, 0, sizeof hints);
- //    hints.ai_family = AF_INET;
- //    hints.ai_socktype = SOCK_DGRAM;
-
-	// struct sockaddr_in dest;
-	// dest.sin_family = AF_INET;
- //    dest.sin_port = htons(53);
- //    dest.sin_addr.s_addr = inet_addr(ROOT_A_A);
-
- //    if ((rv = getaddrinfo(ROOT_A_A, DNS_PORT, &hints, &servinfo)) != 0) {
- //        fprintf(stderr, "getaddrinfo: %s\n", gai_strerror(rv));
- //    }
-
- //    // loop through all the results and make a socket
- //    for(p = servinfo; p != NULL; p = p->ai_next) {
- //        if ((sockfd = socket(p->ai_family, p->ai_socktype,
- //                p->ai_protocol)) == -1) {
- //            perror("talker: socket");
- //            continue;
- //        }
-
- //        break;
- //    }
-
- //    if (p == NULL) {
- //        fprintf(stderr, "talker: failed to bind socket\n");
- //    }
-
- //    do {
- //    	numbytes = sendto(sockfd, queryBuffer, strlen(queryBuffer), 0, (struct sockaddr*)&dest, sizeof(dest)); //p->ai_addr, p->ai_addrlen);
- //    	printf("talker: sent %d bytes to %s\n", numbytes, packet.getIP().c_str());
- //    	sleep(1);
- //    } while (numbytes > 0);
- //    freeaddrinfo(servinfo);
-
- //    printf("talker: sent %d bytes to %s\n", numbytes, packet.getIP().c_str());
- //    close(sockfd);
 
 
+	int sock, numbytes, i;
+	//struct sockaddr_in a;
+	struct sockaddr_in dest;
+
+	sock = socket(AF_INET , SOCK_DGRAM , IPPROTO_UDP); //UDP packet for DNS queries
+ 
+    dest.sin_family = AF_INET;
+    dest.sin_port = htons(53);
+    dest.sin_addr.s_addr = inet_addr(/*ROOT_A_A*/"129.82.45.181");
+
+
+    char buf[3] = {'t','h','a'};
+    cout << "Sending Packet..." << endl;
+    if((numbytes = sendto(sock,queryBuffer,30,0,(struct sockaddr*)&dest,sizeof(dest))) < 0) {
+        perror("sendto failed");
+    }
+    cout << "bytes sent: " << numbytes << endl;
+
+    i = sizeof dest;
+    cout << "Receiving answer..." << endl;
+    if( (numbytes = recvfrom (sock,responseBuffer, 400 , 0 , (struct sockaddr*)&dest , (socklen_t*)&i )) < 0) {
+        perror("recvfrom failed");
+    }
+    cout << "bytes received: " << numbytes << endl;
+
+
+   	cout << "---" << endl;
+	for (unsigned int i = 0; i < sizeof(responseBuffer); i++) {
+		cout << (short) responseBuffer[i] << " ";
+	}
+	cout << "\n---" << endl;
+
+
+	cout << htons(0) << endl;
+	cout << ntohs(-128) << endl;
 	// DNSHeader header(1,'1','0','0','0','0','0','0',1,0,0,0);
 	// DNSQuestion question("3www3cnn3com0", 1, 1);
 	// DNSResourceRecord answer;
