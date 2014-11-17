@@ -5,6 +5,7 @@ FLAGS = -Wall
 EXEC = myresolver
 
 all:	$(EXEC)	
+	mkdir -p bin
 
 myresolver:	$(BINDIR)/main.o
 	g++ $(FLAGS) $(BINDIR)/client.o $(BINDIR)/main.o -o myresolver
@@ -21,4 +22,3 @@ $(BINDIR)/client.o:	$(SRCDIR)/client.cpp $(HEADERSDIR)/client.h $(HEADERSDIR)/p3
 clean:
 	rm -f myresolver
 	rm -rf bin/
-	mkdir bin
