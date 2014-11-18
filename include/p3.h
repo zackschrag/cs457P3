@@ -7,6 +7,7 @@
 #include <iostream>
 #include <string>
 #include <string.h>
+#include <vector>
 
 #include <arpa/inet.h>
 #include <netdb.h>
@@ -20,6 +21,7 @@ using std::cout;
 using std::cerr;
 using std::endl;
 using std::string;
+using std::vector;
 
 #define ROOT_K_A 	"193.0.14.129"
 #define ROOT_K_AAAA "2001:7fd::1"
@@ -59,5 +61,40 @@ using std::string;
 
 #define ROOT_J_A 	"192.58.128.30"
 #define ROOT_J_AAAA "2001:503:c27::2:30"
+
+struct Header {
+	unsigned short id;
+
+	unsigned qr :1;
+	unsigned opcode :4;
+	unsigned aa :1;
+	unsigned tc :1;
+	unsigned rd :1;
+	unsigned ra :1;
+	unsigned z :3;
+	unsigned rcode :4;
+
+	unsigned short qdcount;
+	unsigned short ancount;
+	unsigned short nscount;
+	unsigned short arcount;
+};
+
+struct Question {
+	// name
+	//char *qname;
+	unsigned short qtype;
+	unsigned short qclass;
+};
+
+struct ResourceRecord {
+	// name
+	unsigned short namePtr;
+	unsigned short type;
+	unsigned short rclass;
+	unsigned int ttl;
+	unsigned short rdlength;
+	//int rdata;
+};
 
 #endif

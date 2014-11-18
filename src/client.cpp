@@ -2,17 +2,19 @@
 
 Client::Client() {
 	responseBuffer = new char[500];
+	dp = new DNSPacket();
 }
 
 Client::~Client() {
 	delete tempName;
 	delete responseBuffer;
+	delete dp;
 }
 
 /*
 *	Constructs DNS packet and sends query to dnsServer
 */
-char* Client::sendQuery(char *domainName, string dnsServer) {
+DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 	Header h;
 	h.id = htons(getpid());
 	//h.flags = htons(0);
@@ -67,8 +69,34 @@ char* Client::sendQuery(char *domainName, string dnsServer) {
     }
     cout << "bytes received: " << numbytes << endl;
     close(sock);
-    
-    return responseBuffer;
+
+    parsePacket(responseBuffer, dp);
+    // parseHeader(responseBuffer, *dp);
+    //Header responseHeader = dp->getHeader();
+    vector<Question> responseQuestions = dp->getQuestions();
+    dp->setQname(domainName);
+    cout << responseQuestions.at(0).qtype << endl;
+    cout << responseQuestions.at(0).qclass << endl;
+    cout << dp->getQname() << endl;
+
+    // cout << responseHeader.id << endl;
+    // cout << endl;
+    // cout << responseHeader.qr << endl;
+    // cout << responseHeader.opcode << endl;
+    // cout << responseHeader.aa << endl;
+    // cout << responseHeader.tc << endl;
+    // cout << responseHeader.rd << endl;
+    // cout << responseHeader.ra << endl;
+    // cout << responseHeader.z << endl;
+    // cout << responseHeader.rcode << endl;
+    // cout << endl;
+    // cout << responseHeader.qdcount << endl;
+    // cout << responseHeader.ancount << endl;
+    // cout << responseHeader.nscount << endl;
+    // cout << responseHeader.arcount << endl;
+
+    return *dp;
+    //return responseBuffer;
     //Question response
     // cout << responseHeader.id << endl;
     // cout << endl;
@@ -105,7 +133,13 @@ const char *byte_to_binary(int x)
     return b;
 }
 
-Header Client::parseHeader(char *responseBuffer) {
+void Client::parsePacket(char *responseBuffer, DNSPacket *dp) {
+	parseHeader(responseBuffer, dp);
+	parseQuestion(responseBuffer+sizeof(Header), dp);
+	//parseAnswer()
+}
+
+void Client::parseHeader(char *responseBuffer, DNSPacket *dp) {
 	Header result;
 	unsigned short flags;
 
@@ -133,15 +167,14 @@ Header Client::parseHeader(char *responseBuffer) {
 	result.ancount = ntohs(result.ancount);
 	result.nscount = ntohs(result.nscount);
 	result.arcount = ntohs(result.arcount);
-
-	return result;
+	dp->setHeader(result);
+	//return result;
 }
 
-Question Client::parseQuestion(char *startBuffer) {
+void Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
 	Question result;
 
 	while (*startBuffer != '\0') {
-		//cout << *startBuffer << " ";
 		startBuffer++;
 	}
 	startBuffer++;
@@ -149,26 +182,40 @@ Question Client::parseQuestion(char *startBuffer) {
 	memcpy(&result.qclass, startBuffer+sizeof(result.qtype), sizeof(result.qclass));
 	result.qtype = ntohs(result.qtype);
 	result.qclass = ntohs(result.qclass);
-	return result;
+	dp->addQuestion(result);
+	//dp->setQuestions(result);
+	//return result;
 }
 
-ResourceRecord Client::parseAnswer(char *startBuffer) {
+void Client::parseAnswer(char *startBuffer, DNSPacket *dp) {
 	ResourceRecord result;
+	//cout << *startBuffer << endl;
 	while (*startBuffer != '\0') {
-		//cout << *startBuffer << " ";
+		//cout << &startBuffer << " ";
 		startBuffer++;
 	}
-	startBuffer++;
-	// memcpy(&result.type, startBuffer, sizeof(result.type));
-	// memcpy(&result.rclass, startBuffer+2, sizeof(result.rclass));
-	// memcpy(&result.ttl, startBuffer+4, sizeof(result.ttl));
-	// memcpy(&result.rdlength, startBuffer+6, sizeof(result.rdlength));
+	//startBuffer++;
+	//startBuffer+=2;
+	// memcpy(&result.namePtr, startBuffer, sizeof(result.namePtr));//+sizeof(result.type)+sizeof(result.rclass)+sizeof(result.ttl)+sizeof(result.rdlength));
+	// memcpy(&result.type, startBuffer+2, sizeof(result.type));
+	// memcpy(&result.rclass, startBuffer+4, sizeof(result.rclass));
+	// memcpy(&result.ttl, startBuffer+6, sizeof(result.ttl));
+	// memcpy(&result.rdlength, startBuffer+10, sizeof(result.rdlength));
+	memcpy(&result, startBuffer,16);
 	
-	// result.type = ntohs(result.type);
-	// result.rclass = ntohs(result.rclass);
-	// result.ttl = ntohs(result.ttl);
-	// result.rdlength = ntohs(result.rdlength);
-	return result;
+	result.namePtr = ntohs(result.namePtr);
+	result.type = ntohs(result.type);
+	result.rclass = ntohs(result.rclass);
+	result.ttl = ntohl(result.ttl);
+	result.rdlength = ntohs(result.rdlength);
+
+	cout << "In method:" << endl;
+	cout << result.namePtr << endl;
+	cout << result.type << endl;
+	cout << result.rclass << endl;
+	cout << result.ttl << endl;
+	cout << result.rdlength << endl;
+	//return result;
 }
 
 /*
