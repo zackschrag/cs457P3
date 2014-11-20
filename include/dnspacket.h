@@ -6,6 +6,7 @@
 class DNSPacket {
 public:
 	DNSPacket();
+	~DNSPacket();
 	DNSPacket(Header h, vector<Question> q, vector<ResourceRecord> ans, vector<ResourceRecord> auth, vector<ResourceRecord> addl, char *qname);
 	Header getHeader();
 	vector<Question> getQuestions();
@@ -13,6 +14,16 @@ public:
 	vector<ResourceRecord> getAuthorities();
 	vector<ResourceRecord> getAdditionals();
 	string getQname();
+
+	int getNumberOfQuestions();
+	int getNumberOfAnswers();
+	int getNumberOfAuthorities();
+	int getNumberOfAdditionals();
+
+	void setNumberOfQuestions(int num);
+	void setNumberOfAnswers(int num);
+	void setNumberOfAuthorities(int num);
+	void setNumberOfAdditionals(int num);
 
 	void setQname(char *newName);
 	void setHeader(Header h);
@@ -30,10 +41,15 @@ private:
 	string qname;
 	char *rdata;
 	Header header;
-	vector<Question> questions;
-	vector<ResourceRecord> answers;
-	vector<ResourceRecord> authorities;
-	vector<ResourceRecord> additionals;
+	vector<Question> *questions;
+	vector<ResourceRecord> *answers;
+	vector<ResourceRecord> *authorities;
+	vector<ResourceRecord> *additionals;
+
+	int numberOfQuestions;
+	int numberOfAnswers;
+	int numberOfAuthorities;
+	int numberOfAdditionals;
 };
 
 #endif

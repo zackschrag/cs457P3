@@ -17,7 +17,7 @@ int main(int argc, char **argv) {
 		RRTYPE = argv[2];
 	}
 	domainName = argv[1];
-    DNSPacket dnspacket = c.sendQuery(domainName, "208.67.220.220");//ROOT_A_A);
+    DNSPacket dnspacket = c.sendQuery(domainName, /*"208.67.222.222");*/ROOT_A_A);
 	// Header responseHeader = c.parseHeader(responseBuffer);
  //    cout << responseHeader.id << endl;
  //    cout << endl;

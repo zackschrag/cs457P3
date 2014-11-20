@@ -73,11 +73,11 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
     parsePacket(responseBuffer, dp);
     // parseHeader(responseBuffer, *dp);
     //Header responseHeader = dp->getHeader();
-    vector<Question> responseQuestions = dp->getQuestions();
-    dp->setQname(domainName);
-    cout << responseQuestions.at(0).qtype << endl;
-    cout << responseQuestions.at(0).qclass << endl;
-    cout << dp->getQname() << endl;
+    // vector<Question> responseQuestions = dp->getQuestions();
+    // dp->setQname(domainName);
+    //cout << responseQuestions.at(0).qtype << endl;
+    //cout << responseQuestions.at(0).qclass << endl;
+    //cout << dp->getQname() << endl;
 
     // cout << responseHeader.id << endl;
     // cout << endl;
@@ -133,13 +133,45 @@ const char *byte_to_binary(int x)
     return b;
 }
 
-void Client::parsePacket(char *responseBuffer, DNSPacket *dp) {
-	parseHeader(responseBuffer, dp);
-	parseQuestion(responseBuffer+sizeof(Header), dp);
-	//parseAnswer()
+void PrintHex(char* buf, int amountToPrint){
+
+    int i;
+    for(i = 0; i < amountToPrint; i++){
+
+        printf("%x ",*buf);
+        if(i % 16 == 5) cout << endl;
+        buf = buf + 1;
+
+    }
+
 }
 
-void Client::parseHeader(char *responseBuffer, DNSPacket *dp) {
+void Client::parsePacket(char *responseBuffer, DNSPacket *dp) {
+	char *currPlace = parseHeader(responseBuffer, dp);
+	cout << "hola" << endl;
+	currPlace = parseQuestion(currPlace, dp);
+
+	cout << "blah" << endl;
+	for (int i = 0; i < dp->getNumberOfAnswers(); i++) {
+		cout << i << endl;
+		currPlace = parseResourceRecord(currPlace, dp, 0);		
+	}
+
+	for (int i = 0; i < dp->getNumberOfAuthorities(); i++) {
+		cout << i << endl;
+		currPlace = parseResourceRecord(currPlace, dp, 2);
+	}
+
+	for (int i = 0; i < dp->getNumberOfAdditionals(); i++) {
+		cout << i << endl;
+		currPlace = parseResourceRecord(currPlace, dp, 2);
+	}
+}
+
+/*
+*	Parses header and places into DNSPacket data structure. Returns pointer to 1st question.
+*/
+char* Client::parseHeader(char *responseBuffer, DNSPacket *dp) {
 	Header result;
 	unsigned short flags;
 
@@ -168,10 +200,17 @@ void Client::parseHeader(char *responseBuffer, DNSPacket *dp) {
 	result.nscount = ntohs(result.nscount);
 	result.arcount = ntohs(result.arcount);
 	dp->setHeader(result);
-	//return result;
+	dp->setNumberOfQuestions(result.qdcount);
+	dp->setNumberOfAnswers(result.ancount);
+	dp->setNumberOfAuthorities(result.nscount);
+	dp->setNumberOfAdditionals(result.arcount);
+	return responseBuffer+sizeof(Header);
 }
 
-void Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
+/*
+*	Parses a question and places into DNSPacket data structure. Returns pointer to next question or 1st answer.
+*/
+char* Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
 	Question result;
 
 	while (*startBuffer != '\0') {
@@ -184,24 +223,30 @@ void Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
 	result.qclass = ntohs(result.qclass);
 	dp->addQuestion(result);
 	//dp->setQuestions(result);
-	//return result;
+
+	return startBuffer+sizeof(result);
 }
 
-void Client::parseAnswer(char *startBuffer, DNSPacket *dp) {
+/*
+*	rrtype: 0 = Answer, 1 = Authority, 2 = Additional
+*/
+char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) {
+	PrintHex(startBuffer, 80);
 	ResourceRecord result;
 	//cout << *startBuffer << endl;
-	while (*startBuffer != '\0') {
-		//cout << &startBuffer << " ";
-		startBuffer++;
-	}
+	// while (*startBuffer != '\0') {
+	// 	//cout << &startBuffer << " ";
+	// 	startBuffer++;
+	// }
 	//startBuffer++;
 	//startBuffer+=2;
-	// memcpy(&result.namePtr, startBuffer, sizeof(result.namePtr));//+sizeof(result.type)+sizeof(result.rclass)+sizeof(result.ttl)+sizeof(result.rdlength));
-	// memcpy(&result.type, startBuffer+2, sizeof(result.type));
-	// memcpy(&result.rclass, startBuffer+4, sizeof(result.rclass));
-	// memcpy(&result.ttl, startBuffer+6, sizeof(result.ttl));
-	// memcpy(&result.rdlength, startBuffer+10, sizeof(result.rdlength));
-	memcpy(&result, startBuffer,16);
+	memcpy(&result.namePtr, startBuffer, sizeof(result.namePtr));//+sizeof(result.type)+sizeof(result.rclass)+sizeof(result.ttl)+sizeof(result.rdlength));
+	memcpy(&result.type, startBuffer+2, sizeof(result.type));
+	memcpy(&result.rclass, startBuffer+4, sizeof(result.rclass));
+	memcpy(&result.ttl, startBuffer+6, sizeof(result.ttl));
+	memcpy(&result.rdlength, startBuffer+10, sizeof(result.rdlength));
+	//memcpy(&result.rdlength, startBuffer+10, sizeof(result.rdlength));
+	//memcpy(&result, startBuffer,16);
 	
 	result.namePtr = ntohs(result.namePtr);
 	result.type = ntohs(result.type);
@@ -210,12 +255,23 @@ void Client::parseAnswer(char *startBuffer, DNSPacket *dp) {
 	result.rdlength = ntohs(result.rdlength);
 
 	cout << "In method:" << endl;
-	cout << result.namePtr << endl;
-	cout << result.type << endl;
-	cout << result.rclass << endl;
-	cout << result.ttl << endl;
-	cout << result.rdlength << endl;
-	//return result;
+	//cout << result.namePtr << endl;
+	cout << "type: " << result.type << endl;
+	cout << "rclass: " << result.rclass << endl;
+	cout << "ttl: " << result.ttl << endl;
+	cout << "rdlength: " << result.rdlength << endl;
+	cout << endl;
+	if (rrtype == 0) {
+		dp->addAnswer(result);
+	}
+	else if (rrtype == 1) {
+		dp->addAuthority(result);
+	}
+	else if (rrtype == 2) {
+		dp->addAdditional(result);
+	}
+	// START HERE: parsing answer in wrong spot.
+	return (startBuffer+sizeof(ResourceRecord)+result.rdlength);
 }
 
 /*

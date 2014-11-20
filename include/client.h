@@ -13,11 +13,9 @@ public:
 
 	DNSPacket sendQuery(char *domainName, string dnsServer);
 	void parsePacket(char *responseBuffer, DNSPacket *dp);
-	void parseHeader(char *responseBuffer, DNSPacket *dp);
-	void parseQuestion(char *responseBuffer, DNSPacket *dp);
-	void parseAnswer(char *responseBuffer, DNSPacket *dp);
-	void parseAuthority(char *responseBuffer, DNSPacket *dp);
-	void parseAdditional(char *responseBuffer, DNSPacket *dp);
+	char* parseHeader(char *responseBuffer, DNSPacket *dp);
+	char* parseQuestion(char *responseBuffer, DNSPacket *dp);
+	char* parseResourceRecord(char *responseBuffer, DNSPacket *dp, int rrtype);
 
 private:
 	char *tempName;
