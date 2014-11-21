@@ -3,6 +3,7 @@
 
 #include <p3.h>
 #include <dnspacket.h>
+#include <dnsquestion.h>
 
 #define DNS_PORT "53"
 

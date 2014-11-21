@@ -2,6 +2,8 @@
 #define DNSPACKET_H
 
 #include <p3.h>
+#include <dnsquestion.h>
+#include <dnsresourcerecord.h>
 
 class DNSPacket {
 public:
@@ -25,23 +27,36 @@ public:
 	void setNumberOfAuthorities(int num);
 	void setNumberOfAdditionals(int num);
 
-	void setQname(char *newName);
+	void setQname(string newName);
 	void setHeader(Header h);
 	void setQuestions(vector<Question> q);
 	void setAnswer(ResourceRecord ans);
 
-
 	void addQuestion(Question q);
-	void addAnswer(ResourceRecord ans);
-	void addAuthority(ResourceRecord auth);
-	void addAdditional(ResourceRecord addl);
+	void addDNSQuestion(DNSQuestion q);
 
+	void addAnswer(ResourceRecord ans);
+	void addDNSAnswer(DNSResourceRecord rr);
+
+	void addAuthority(ResourceRecord auth);
+	void addDNSAuthority(DNSResourceRecord rr);
+
+	void addAdditional(ResourceRecord addl);
+	void addDNSAdditional(DNSResourceRecord rr);
+
+
+	vector<DNSQuestion> *dnsQuestions;
+	vector<DNSResourceRecord> *dnsAnswers;
+	vector<DNSResourceRecord> *dnsAuthorities;
+	vector<DNSResourceRecord> *dnsAdditionals;
 private:
 	//char *qname;
 	string qname;
 	char *rdata;
 	Header header;
 	vector<Question> *questions;
+
+
 	vector<ResourceRecord> *answers;
 	vector<ResourceRecord> *authorities;
 	vector<ResourceRecord> *additionals;
