@@ -1,16 +1,9 @@
 #include <dnspacket.h>
 
 DNSPacket::DNSPacket() {
-	questions = new vector<Question>();
 	dnsQuestions = new vector<DNSQuestion>();
-
-	answers = new vector<ResourceRecord>();
 	dnsAnswers = new vector<DNSResourceRecord>();
-
-	authorities = new vector<ResourceRecord>();
 	dnsAuthorities = new vector<DNSResourceRecord>();
-
-	additionals = new vector<ResourceRecord>();
 	dnsAdditionals = new vector<DNSResourceRecord>();
 }
 
@@ -35,21 +28,21 @@ Header DNSPacket::getHeader() {
 	return header;
 }
 
-vector<Question> DNSPacket::getQuestions() {
-	return *questions;
-}
+// vector<Question> DNSPacket::getQuestions() {
+// 	return *questions;
+// }
 
-vector<ResourceRecord> DNSPacket::getAnswers() {
-	return *answers;
-}
+// vector<ResourceRecord> DNSPacket::getAnswers() {
+// 	return *answers;
+// }
 
-vector<ResourceRecord> DNSPacket::getAuthorities() {
-	return *authorities;
-}
+// vector<ResourceRecord> DNSPacket::getAuthorities() {
+// 	return *authorities;
+// }
 
-vector<ResourceRecord> DNSPacket::getAdditionals() {
-	return *additionals;
-}
+// vector<ResourceRecord> DNSPacket::getAdditionals() {
+// 	return *additionals;
+// }
 
 string DNSPacket::getQname() {
 	return qname;
@@ -115,32 +108,16 @@ void DNSPacket::setQuestions(vector<Question> q) {
 	//questions = q;
 }
 
-void DNSPacket::addQuestion(Question q) {
-	questions->push_back(q);
-}
-
 void DNSPacket::addDNSQuestion(DNSQuestion q) {
 	dnsQuestions->push_back(q);
-}
-
-void DNSPacket::addAnswer(ResourceRecord ans) {
-	answers->push_back(ans);
 }
 
 void DNSPacket::addDNSAnswer(DNSResourceRecord rr) {
 	dnsAnswers->push_back(rr);
 }
 
-void DNSPacket::addAuthority(ResourceRecord auth) {
-	authorities->push_back(auth);
-}
-
 void DNSPacket::addDNSAuthority(DNSResourceRecord auth) {
 	dnsAuthorities->push_back(auth);
-}
-
-void DNSPacket::addAdditional(ResourceRecord addl) {
-	additionals->push_back(addl);
 }
 
 void DNSPacket::addDNSAdditional(DNSResourceRecord addl) {

@@ -28,6 +28,28 @@ unsigned char* DNSResourceRecord::getRdata() {
 	return rRdata;
 }
 
+void DNSResourceRecord::printRdata() {
+	int length = 0;
+	int i = 0;
+	while (rRdata[i] != '\0') {
+		length++;
+		i++;
+	}
+	//cout << "length: " << length << endl;
+	if (isdigit(rRdata[1])) {
+		for (i = 0; i < length; i++) {
+			cout << (int) rRdata[i] << ".";
+		}
+		cout << endl;
+	}
+	else {
+		for (i = 0; i < length; i++) {
+			cout << rRdata[i];
+		}
+		cout << endl;
+	}
+}
+
 void DNSResourceRecord::setName(string newName) {
 	rName = newName;
 }
@@ -49,7 +71,15 @@ void DNSResourceRecord::setRdlength(short newLength) {
 }
 
 void DNSResourceRecord::setRdata(unsigned char *newData) {
-	for (unsigned int i = 0; i < strlen((char*) newData); i++) {
+	int length = 0;
+	int i = 0;
+	while (newData[i] != '\0') {
+		length++;
+		i++;
+	}
+	//cout << "length: " << length << endl;
+	for (i = 0; i < length; i++) {
 		rRdata[i] = newData[i];
 	}
+	rRdata[length] = '\0';
 }

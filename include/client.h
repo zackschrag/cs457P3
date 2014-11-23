@@ -21,11 +21,13 @@ public:
 private:
 	char *tempName;
 	char *responseBuffer;
+	//char responseBuffer[1000];
 	int socketToServer;
 
 	DNSPacket *dp;
 
 	char* nameToDNS(char *domainName);
+	string DNSToName(string dnsName);
 
 };
 

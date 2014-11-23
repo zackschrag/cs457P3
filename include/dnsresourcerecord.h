@@ -13,6 +13,7 @@ public:
 	int getTTL();
 	short getRdlength();
 	unsigned char* getRdata();
+	void printRdata();
 
 	void setName(string newName);
 	void setType(short newType);

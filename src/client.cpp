@@ -1,13 +1,14 @@
 #include <client.h>
+#define BUFFER_SIZE 1000
 
 Client::Client() {
-	responseBuffer = new char[500];
+	responseBuffer = new char[BUFFER_SIZE];
 	dp = new DNSPacket();
 }
 
 Client::~Client() {
 	delete tempName;
-	delete responseBuffer;
+	//delete responseBuffer;
 	delete dp;
 }
 
@@ -64,7 +65,7 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 
     i = sizeof(dest);
     cout << "Receiving answer..." << endl;
-    if( (numbytes = recvfrom (sock,responseBuffer, 400 , 0 , (struct sockaddr*)&dest , (socklen_t*)&i )) < 0) {
+    if( (numbytes = recvfrom (sock,responseBuffer, BUFFER_SIZE, 0, (struct sockaddr*)&dest , (socklen_t*)&i )) < 0) {
         perror("recvfrom failed");
     }
     cout << "bytes received: " << numbytes << endl;
@@ -80,37 +81,38 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 	vector<DNSResourceRecord> *da = dp->dnsAnswers;
 	for (int i = 0; i < dp->getNumberOfAnswers(); i++) {
 		DNSResourceRecord zzz = da->at(i);
-		// cout << "name: " << zzz.getName() << endl;
-		// cout << "type: " << zzz.getType() << endl;
-		// cout << "class: " << zzz.getClass() << endl;
-		// cout << "ttl: " << zzz.getTTL() << endl;
+		cout << "name: " << zzz.getName() << endl;
+		cout << "type: " << zzz.getType() << endl;
+		cout << "class: " << zzz.getClass() << endl;
+		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << zzz.getRdata() << endl;		
+		cout << "rdata: " << endl;		
 		cout << endl;
 	}
 
+	cout << "<---- AUTHORITIES ---->" << endl;
 	vector<DNSResourceRecord> *dauth = dp->dnsAuthorities;
 	for (int i = 0; i < dp->getNumberOfAuthorities(); i++) {
 		DNSResourceRecord zzz = dauth->at(i);
-		// cout << "name: " << zzz.getName() << endl;
-		// cout << "type: " << zzz.getType() << endl;
-		// cout << "class: " << zzz.getClass() << endl;
-		// cout << "ttl: " << zzz.getTTL() << endl;
+		cout << "name: " << zzz.getName() << endl;
+		cout << "type: " << zzz.getType() << endl;
+		cout << "class: " << zzz.getClass() << endl;
+		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << zzz.getRdata() << endl;		
+		cout << "rdata: " << endl;
 		cout << endl;
 	}
 
 	vector<DNSResourceRecord> *daddl = dp->dnsAdditionals;
-	cout << "additionals" << endl;
+	cout << "<---- ADDITIONALS ---->" << endl;
 	for (int i = 0; i < dp->getNumberOfAdditionals(); i++) {
 		DNSResourceRecord zzz = daddl->at(i);
-		// cout << "name: " << zzz.getName() << endl;
-		// cout << "type: " << zzz.getType() << endl;
-		// cout << "class: " << zzz.getClass() << endl;
-		// cout << "ttl: " << zzz.getTTL() << endl;
+		cout << "name: " << zzz.getName() << endl;
+		cout << "type: " << zzz.getType() << endl;
+		cout << "class: " << zzz.getClass() << endl;
+		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << zzz.getRdata() << endl;		
+		cout << "rdata: " << endl;
 		cout << endl;
 	}
     return *dp;
@@ -221,17 +223,14 @@ char* Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
 	memcpy(&result.qclass, startBuffer+sizeof(result.qtype), sizeof(result.qclass));
 	result.qtype = ntohs(result.qtype);
 	result.qclass = ntohs(result.qclass);
-	dp->addQuestion(result);
 	dp->setQname(qname);
 
 	DNSQuestion *dq = new DNSQuestion();
 
-	
-	dq->setQname(qname);
+	dq->setQname(DNSToName(qname));
 	dq->setQtype(result.qtype);
 	dq->setQclass(result.qclass);
 	dp->addDNSQuestion(*dq);
-	//dp->setQuestions(result);
 
 	return startBuffer+sizeof(result);
 }
@@ -244,13 +243,24 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 
 	string name = "";
 	int ctr = 0;
+
 	if (*startBuffer == (char) 192) {
+		//cout << "NO" << endl;
 		startBuffer += 2;
-		name = dp->getQname();
+		char *x = startBuffer+1;
+		// START HERE: PARSING POINTERS
+		char *tempBuffer = responseBuffer+x;
+		while (*tempBuffer != '\0') {
+			name += *tempBuffer;
+			tempBuffer++;
+		}
+
 	}
 	else {
+		//cout << "YES" << endl;
 		while (*startBuffer != '\0') {
 			name += startBuffer[ctr];
+			ctr++;
 			startBuffer++;
 		}
 		startBuffer++;
@@ -267,16 +277,17 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	result.ttl = ntohl(result.ttl);
 	result.rdlength = ntohs(result.rdlength);
 
-// START HERE: rdlength is getting set to 0 for last additionals
 	unsigned char rdata[100];
 
 	for (short i = 0; i < result.rdlength; i++) {
 		rdata[i] = *startBuffer;
 		startBuffer++;
 	}
+	rdata[result.rdlength] = '\0';
 
 	DNSResourceRecord *rr = new DNSResourceRecord();
-	rr->setName(name);
+
+	rr->setName(DNSToName(name));
 	rr->setType(result.type);
 	rr->setClass(result.rclass);
 	rr->setTTL(result.ttl);
@@ -284,15 +295,15 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	rr->setRdata(rdata);
 
 	if (rrtype == 0) {
-		dp->addAnswer(result);
+		//dp->addAnswer(result);
 		dp->addDNSAnswer(*rr);
 	}
 	else if (rrtype == 1) {
-		dp->addAuthority(result);
+		//dp->addAuthority(result);
 		dp->addDNSAuthority(*rr);
 	}
 	else if (rrtype == 2) {
-		dp->addAdditional(result);
+		//dp->addAdditional(result);
 		dp->addDNSAdditional(*rr);
 	}
 
@@ -334,4 +345,21 @@ char* Client::nameToDNS(char *domainName) {
 	return tempName;
 }
 
+/*
+*	Converts the DNS format into domain name
+*	Ex: 3www6google3com --> www.google.com 
+*/
+string Client::DNSToName(string dnsName) {
+	string newName = "";
+	unsigned int i = 0;
+	
+	while (i < dnsName.length()) {
+		int num = (int) dnsName.at(i);
+		dnsName = dnsName.replace(i, 1, ".");
 
+		i += num;
+		i++;
+	}
+	newName = dnsName.substr(1);
+	return newName;
+}

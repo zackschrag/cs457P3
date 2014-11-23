@@ -32,16 +32,16 @@ public:
 	void setQuestions(vector<Question> q);
 	void setAnswer(ResourceRecord ans);
 
-	void addQuestion(Question q);
+	//void addQuestion(Question q);
 	void addDNSQuestion(DNSQuestion q);
 
-	void addAnswer(ResourceRecord ans);
+	//void addAnswer(ResourceRecord ans);
 	void addDNSAnswer(DNSResourceRecord rr);
 
-	void addAuthority(ResourceRecord auth);
+	//void addAuthority(ResourceRecord auth);
 	void addDNSAuthority(DNSResourceRecord rr);
 
-	void addAdditional(ResourceRecord addl);
+	//void addAdditional(ResourceRecord addl);
 	void addDNSAdditional(DNSResourceRecord rr);
 
 
@@ -54,12 +54,12 @@ private:
 	string qname;
 	char *rdata;
 	Header header;
-	vector<Question> *questions;
+	// vector<Question> *questions;
 
 
-	vector<ResourceRecord> *answers;
-	vector<ResourceRecord> *authorities;
-	vector<ResourceRecord> *additionals;
+	// vector<ResourceRecord> *answers;
+	// vector<ResourceRecord> *authorities;
+	// vector<ResourceRecord> *additionals;
 
 	int numberOfQuestions;
 	int numberOfAnswers;
