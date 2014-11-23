@@ -28,21 +28,21 @@ Header DNSPacket::getHeader() {
 	return header;
 }
 
-// vector<Question> DNSPacket::getQuestions() {
-// 	return *questions;
-// }
+vector<DNSQuestion> DNSPacket::getDNSQuestions() {
+	return *dnsQuestions;
+}
 
-// vector<ResourceRecord> DNSPacket::getAnswers() {
-// 	return *answers;
-// }
+vector<DNSResourceRecord> DNSPacket::getDNSAnswers() {
+	return *dnsAnswers;
+}
 
-// vector<ResourceRecord> DNSPacket::getAuthorities() {
-// 	return *authorities;
-// }
+vector<DNSResourceRecord> DNSPacket::getDNSAuthorities() {
+	return *dnsAuthorities;
+}
 
-// vector<ResourceRecord> DNSPacket::getAdditionals() {
-// 	return *additionals;
-// }
+vector<DNSResourceRecord> DNSPacket::getDNSAdditionals() {
+	return *dnsAdditionals;
+}
 
 string DNSPacket::getQname() {
 	return qname;

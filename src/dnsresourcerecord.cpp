@@ -28,6 +28,9 @@ unsigned char* DNSResourceRecord::getRdata() {
 	return rRdata;
 }
 
+/*
+*	DEBUGGING ONLY: only works well for IPv4
+*/
 void DNSResourceRecord::printRdata() {
 	int length = 0;
 	int i = 0;
@@ -36,18 +39,18 @@ void DNSResourceRecord::printRdata() {
 		i++;
 	}
 	//cout << "length: " << length << endl;
-	if (isdigit(rRdata[1])) {
+	//if (isdigit(rRdata[1])) {
 		for (i = 0; i < length; i++) {
 			cout << (int) rRdata[i] << ".";
 		}
 		cout << endl;
-	}
-	else {
-		for (i = 0; i < length; i++) {
-			cout << rRdata[i];
-		}
-		cout << endl;
-	}
+	// }
+	// else {
+	// 	for (i = 0; i < length; i++) {
+	// 		cout << rRdata[i];
+	// 	}
+	// 	cout << endl;
+	// }
 }
 
 void DNSResourceRecord::setName(string newName) {

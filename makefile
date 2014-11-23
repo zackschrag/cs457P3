@@ -1,7 +1,7 @@
 HEADERSDIR = include
 SRCDIR = src
 BINDIR = bin
-FLAGS = -Wall
+FLAGS = -Wall -std=c++11
 EXEC = myresolver
 
 all:	$(EXEC)	

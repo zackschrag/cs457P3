@@ -11,10 +11,10 @@ public:
 	~DNSPacket();
 	DNSPacket(Header h, vector<Question> q, vector<ResourceRecord> ans, vector<ResourceRecord> auth, vector<ResourceRecord> addl, char *qname);
 	Header getHeader();
-	vector<Question> getQuestions();
-	vector<ResourceRecord> getAnswers();
-	vector<ResourceRecord> getAuthorities();
-	vector<ResourceRecord> getAdditionals();
+	vector<DNSQuestion> getDNSQuestions();
+	vector<DNSResourceRecord> getDNSAnswers();
+	vector<DNSResourceRecord> getDNSAuthorities();
+	vector<DNSResourceRecord> getDNSAdditionals();
 	string getQname();
 
 	int getNumberOfQuestions();

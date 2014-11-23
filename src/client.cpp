@@ -86,7 +86,8 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 		cout << "class: " << zzz.getClass() << endl;
 		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << endl;		
+		cout << "rdata: " << endl;	
+		zzz.printRdata();	
 		cout << endl;
 	}
 
@@ -100,6 +101,7 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
 		cout << "rdata: " << endl;
+		zzz.printRdata();
 		cout << endl;
 	}
 
@@ -113,6 +115,7 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 		cout << "ttl: " << zzz.getTTL() << endl;
 		cout << "rdlength: " << zzz.getRdlength() << endl;
 		cout << "rdata: " << endl;
+		zzz.printRdata();
 		cout << endl;
 	}
     return *dp;
@@ -242,29 +245,59 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	ResourceRecord result;
 
 	string name = "";
-	int ctr = 0;
-
-	if (*startBuffer == (char) 192) {
-		//cout << "NO" << endl;
-		startBuffer += 2;
-		char *x = startBuffer+1;
-		// START HERE: PARSING POINTERS
-		char *tempBuffer = responseBuffer+x;
-		while (*tempBuffer != '\0') {
-			name += *tempBuffer;
-			tempBuffer++;
+	int ctr = 0; // counts how many to offset
+	bool isPtr = false;
+	cout << endl;
+	PrintHex(startBuffer, 10);
+	char *currPtr = startBuffer;
+	while (*currPtr != '\0') {
+		if (*currPtr == (char) 192) {
+			// It's a pointer
+	//		cout << "POINTER" << endl;
+			isPtr = true;
+			unsigned int offset = (unsigned char) *(currPtr+1);
+	//		cout << "offset: " << offset << endl;
+			currPtr = responseBuffer+offset;
 		}
-
+		else {
+			name += *currPtr;				
+			//name += " ";
+			currPtr++;
+		}
+	}
+	if (isPtr) {
+		startBuffer+=2;
 	}
 	else {
-		//cout << "YES" << endl;
-		while (*startBuffer != '\0') {
-			name += startBuffer[ctr];
-			ctr++;
-			startBuffer++;
-		}
-		startBuffer++;
+		startBuffer = currPtr;
 	}
+	//cout << (int) ctr << endl;
+	//startBuffer+=ctr;
+	//cout << "name: " << name << endl;
+	cout << *startBuffer << endl;
+	//PrintHex(startBuffer, 10);
+	// if (*startBuffer == (char) 192) {
+	// 	//cout << "NO" << endl;
+	// 	//startBuffer += 2;
+	// 	unsigned int x = startBuffer++;
+	// 	cout << "x: " << x << endl;
+	// 	// START HERE: PARSING POINTERS
+	// 	char *tempBuffer = responseBuffer+x;
+	// 	while (*tempBuffer != '\0') {
+	// 		name += *tempBuffer;
+	// 		tempBuffer++;
+	// 	}
+	// 	startBuffer++;
+	// }
+	// else {
+	// 	//cout << "YES" << endl;
+	// 	while (*startBuffer != '\0') {
+	// 		name += startBuffer[ctr];
+	// 		ctr++;
+	// 		startBuffer++;
+	// 	}
+	// 	startBuffer++;
+	// }
 
 	memcpy(&result.type, startBuffer, sizeof(result.type));
 	memcpy(&result.rclass, startBuffer+2, sizeof(result.rclass));
