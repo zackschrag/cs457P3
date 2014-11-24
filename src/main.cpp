@@ -94,15 +94,13 @@ int main(int argc, char *argv[]) {
 				nextServer = ROOT_A_A;
 				domainName = (char*) ans.getRdata();
 
-				//char * qaz = (char*) ans.getRdata();
-				//memcpy(domainName, qaz, strlen(qaz));
 				string tmp(domainName);
 				tmp = c.DNSToName(tmp);
 				
 				for (unsigned int i = 0; i < tmp.length(); i++) {
 					domainName[i] = tmp.at(i);
 				}
-				//cout << tmp << endl;
+
 				cnameAnswers->push_back(ans);
 				continue;
 			}
@@ -132,9 +130,27 @@ int main(int argc, char *argv[]) {
 			}
 			else {
 				cout << "NO ADDITIONAL RECORDS" << endl;
+				cout << "See README file for why this fails." << endl;
+				// cout << nextServer << endl;
+				// if (nextServer.compare("198.41.0.4") == 0) {
+				// 	cout << "No IPv6 records for this domain." << endl;
+				// }
 				vector<DNSResourceRecord> *authorities = dnspacket->dnsAuthorities;
 				DNSResourceRecord auth = authorities->at(0);
-				nextServer = auth.getRdataAsString();
+				// unsigned char *x = auth.getRdata();
+				// nextServer = auth.getRdataAsString();
+				// string y((char*)x);
+				// nextServer = c.DNSToName(y);
+				// nextServer = ROOT_A_A;
+				domainName = (char*) auth.getRdata();
+
+				string tmp(domainName);
+				tmp = c.DNSToName(tmp);
+				
+				for (unsigned int i = 0; i < tmp.length(); i++) {
+					domainName[i] = tmp.at(i);
+				}
+				//cout << domainName << endl;
 				//cout << "nextServer: " << nextServer << endl;
 			}
 		}

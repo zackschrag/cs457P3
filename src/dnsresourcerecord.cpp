@@ -57,9 +57,9 @@ void DNSResourceRecord::printRdata() {
 	//cout << "length: " << length << endl;
 	//if (isdigit(rRdata[1])) {
 		for (i = 0; i < length; i++) {
-			cout << (int) rRdata[i] << ".";
+			//cout << (int) rRdata[i] << ".";
 		}
-		cout << endl;
+		//cout << endl;
 	// }
 	// else {
 	// 	for (i = 0; i < length; i++) {
@@ -97,19 +97,21 @@ void DNSResourceRecord::setRdata(unsigned char *newData) {
 		//cout << ipv6 << endl;
 		IPv6Rdata = (unsigned char*) ipv6;
 	}
-	//memset(rRdata, 0, 100);
-	int length = 0;
-	int i = 0;
-	while (newData[i] != '\0') {
-		length++;
-		i++;
-	}
-	//cout << "length: " << length << endl;
-	for (i = 0; i < length; i++) {
-		rRdata[i] = newData[i];
-		//cout << (int) rRdata[i] << endl;
-	}
-	rRdata[length] = '\0';
+	//else {
+		//memset(rRdata, 0, 100);
+		int length = 0;
+		int i = 0;
+		while (newData[i] != '\0') {
+			length++;
+			i++;
+		}
+		//cout << "length: " << length << endl;
+		for (i = 0; i < length; i++) {
+			rRdata[i] = newData[i];
+			//cout << (int) rRdata[i] << endl;
+		}
+		rRdata[length] = '\0';
+	//}
 }
 
 void DNSResourceRecord::setRdataAsIPv6(unsigned char *newData) {

@@ -256,20 +256,21 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	result.rdlength = ntohs(result.rdlength);
 
 	unsigned char rdata[100];
-	//unsigned char *rdata0 = new unsigned char[100];
 	memset(&rdata, 0, sizeof(rdata));
 
-	if (!(result.type == 5)) {
+	if (!(result.type == 5) && !(result.type == 6)) {
+		//cout << "NOT A CNAME" << endl;
 		for (unsigned int i = 0; i < result.rdlength; i++) {
 			rdata[i] = *startBuffer;
 			startBuffer++;
 		}
 		rdata[result.rdlength] = '\0';
+		//cout << rdata << endl;
 	}
 	else {
 		currPtr = startBuffer;
 		int j = 0;
-		while (*currPtr != '\0') {
+		while ((*currPtr != '\0')) {
 			if (*currPtr == (char) 192) {
 				// It's a pointer
 				isPtr = true;
@@ -289,6 +290,7 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 			startBuffer = currPtr;
 		}
 	}
+	//cout << rdata << endl;
 	//memcpy(&rdata0, rdata, sizeof(ra))
 
 	// char *ipv6 = new char[100];
