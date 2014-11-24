@@ -3,7 +3,7 @@ cs457P3 - DNS Resolver
 
 Usage
 =======
-./myresolver <domain-name> [RRTYPE code]
+./myresolver <domainName> [RRTYPE code]
 
 Things to note
 =======
@@ -23,10 +23,5 @@ We only got IPv4 working flawlessly. IPv6 works for some cases:
 www.google.com
 www.nlnetlabs.nl
 
-
-TODO
-=======
--CNAME
--No additional records
 
 
