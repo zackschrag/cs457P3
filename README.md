@@ -3,7 +3,7 @@ cs457P3 - DNS Resolver
 
 Usage
 =======
-./myresolver <domainName> [RRTYPE code]
+./myresolver domain-name [RRTYPE code]
 
 Things to note
 =======
