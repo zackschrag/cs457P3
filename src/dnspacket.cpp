@@ -8,10 +8,10 @@ DNSPacket::DNSPacket() {
 }
 
 DNSPacket::~DNSPacket() {
-	// delete questions;
-	// delete answers;
-	// delete authorities;
-	// delete additionals;
+	delete dnsQuestions;
+	delete dnsAnswers;
+	delete dnsAuthorities;
+	delete dnsAdditionals;
 }
 
 DNSPacket::DNSPacket(Header h, vector<Question> q, vector<ResourceRecord> ans, vector<ResourceRecord> auth, vector<ResourceRecord> addl, char *qname) {
@@ -22,6 +22,13 @@ DNSPacket::DNSPacket(Header h, vector<Question> q, vector<ResourceRecord> ans, v
 	// additionals = addl;
 
 	// setQname(qname);
+}
+
+void DNSPacket::clearAllRecords() {
+	dnsQuestions->clear();
+	dnsAnswers->clear();
+	dnsAuthorities->clear();
+	dnsAdditionals->clear();
 }
 
 Header DNSPacket::getHeader() {

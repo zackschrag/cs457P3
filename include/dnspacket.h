@@ -43,6 +43,7 @@ public:
 
 	//void addAdditional(ResourceRecord addl);
 	void addDNSAdditional(DNSResourceRecord rr);
+	void clearAllRecords();
 
 
 	vector<DNSQuestion> *dnsQuestions;

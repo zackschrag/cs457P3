@@ -3,19 +3,20 @@
 
 Client::Client() {
 	responseBuffer = new char[BUFFER_SIZE];
+	tempName = new char[100];
 	dp = new DNSPacket();
 }
 
 Client::~Client() {
-	delete tempName;
-	//delete responseBuffer;
+	delete [] tempName;
+	delete [] responseBuffer;
 	delete dp;
 }
 
 /*
 *	Constructs DNS packet and sends query to dnsServer
 */
-DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
+DNSPacket* Client::sendQuery(char *domainName, string dnsServer, short recordType) {
 	Header h;
 	h.id = htons(getpid());
 	//h.flags = htons(0);
@@ -34,18 +35,29 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
 	h.arcount = htons(0);
 
 	Question q;
+	//cout << "domainName: " << domainName << endl;
+
 	char *qname = nameToDNS(domainName);
-	q.qtype = htons(1);
+	// cout << "qname: " << endl;
+	// for (unsigned int i = 0; i < strlen(qname); i++) {
+	// 	cout << qname[i] << " ";
+	// }
+	// cout << endl;
+	//cout << "type: " << recordType << endl;
+	q.qtype = htons(recordType);
+
 	q.qclass = htons(1);
 
 	char queryBuffer[256];
 	//char responseBuffer[500];
 	memset(queryBuffer, 0, sizeof(queryBuffer));
-	//memset(responseBuffer, 0, sizeof(responseBuffer));
+	memset(responseBuffer, 0, BUFFER_SIZE);
 
 	memcpy(queryBuffer, &h, sizeof(h));
 	memcpy(queryBuffer+(sizeof(h)), qname, strlen(qname)+1);
 	memcpy(queryBuffer+(sizeof(h)+strlen(qname)+1), &q, sizeof(q));
+
+	int queryLength = sizeof(h) + strlen(qname)+1 + sizeof(q);
 
 	int sock, numbytes, i;
 
@@ -57,68 +69,22 @@ DNSPacket Client::sendQuery(char *domainName, string dnsServer) {
     dest.sin_port = htons(53);
     dest.sin_addr.s_addr = inet_addr(dnsServer.c_str());
 
-    cout << "Sending packet to " << dnsServer << endl;
-    if((numbytes = sendto(sock,queryBuffer,sizeof(queryBuffer),0,(struct sockaddr*)&dest,sizeof(dest))) < 0) {
+    //cout << "Sending packet to " << dnsServer << endl;
+    if((numbytes = sendto(sock,queryBuffer, queryLength,0,(struct sockaddr*)&dest,sizeof(dest))) < 0) {
         perror("sendto failed");
     }
-    cout << "bytes sent: " << numbytes << endl;
+    //cout << "bytes sent: " << numbytes << endl;
 
     i = sizeof(dest);
-    cout << "Receiving answer..." << endl;
+    //cout << "Receiving answer..." << endl;
     if( (numbytes = recvfrom (sock,responseBuffer, BUFFER_SIZE, 0, (struct sockaddr*)&dest , (socklen_t*)&i )) < 0) {
         perror("recvfrom failed");
     }
-    cout << "bytes received: " << numbytes << endl;
+    //cout << "bytes received: " << numbytes << endl;
     close(sock);
-
+	memset(qname, 0, strlen(qname)+1);
     parsePacket(responseBuffer, dp);
-    //vector<DNSQuestion> *dq = dp->dnsQuestions;
-    //DNSQuestion yyy = dq->at(0);
-    // cout << "qname: " << yyy.getQname() << endl;
-    // cout << "qtype: " << yyy.getQtype() << endl;
-    // cout << "qclass: " << yyy.getQclass() << endl;
-
-	vector<DNSResourceRecord> *da = dp->dnsAnswers;
-	for (int i = 0; i < dp->getNumberOfAnswers(); i++) {
-		DNSResourceRecord zzz = da->at(i);
-		cout << "name: " << zzz.getName() << endl;
-		cout << "type: " << zzz.getType() << endl;
-		cout << "class: " << zzz.getClass() << endl;
-		cout << "ttl: " << zzz.getTTL() << endl;
-		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << endl;	
-		zzz.printRdata();	
-		cout << endl;
-	}
-
-	cout << "<---- AUTHORITIES ---->" << endl;
-	vector<DNSResourceRecord> *dauth = dp->dnsAuthorities;
-	for (int i = 0; i < dp->getNumberOfAuthorities(); i++) {
-		DNSResourceRecord zzz = dauth->at(i);
-		cout << "name: " << zzz.getName() << endl;
-		cout << "type: " << zzz.getType() << endl;
-		cout << "class: " << zzz.getClass() << endl;
-		cout << "ttl: " << zzz.getTTL() << endl;
-		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << endl;
-		zzz.printRdata();
-		cout << endl;
-	}
-
-	vector<DNSResourceRecord> *daddl = dp->dnsAdditionals;
-	cout << "<---- ADDITIONALS ---->" << endl;
-	for (int i = 0; i < dp->getNumberOfAdditionals(); i++) {
-		DNSResourceRecord zzz = daddl->at(i);
-		cout << "name: " << zzz.getName() << endl;
-		cout << "type: " << zzz.getType() << endl;
-		cout << "class: " << zzz.getClass() << endl;
-		cout << "ttl: " << zzz.getTTL() << endl;
-		cout << "rdlength: " << zzz.getRdlength() << endl;
-		cout << "rdata: " << endl;
-		zzz.printRdata();
-		cout << endl;
-	}
-    return *dp;
+    return dp;
 }
 
 /* 
@@ -160,15 +126,20 @@ void Client::parsePacket(char *responseBuffer, DNSPacket *dp) {
 
 	for (int i = 0; i < dp->getNumberOfAnswers(); i++) {
 		currPlace = parseResourceRecord(currPlace, dp, 0);		
+		//cout << "&" << endl;
 	}
 
 	for (int i = 0; i < dp->getNumberOfAuthorities(); i++) {
 		currPlace = parseResourceRecord(currPlace, dp, 1);
+		//cout << "!" << endl;
 	}
 
 	for (int i = 0; i < dp->getNumberOfAdditionals(); i++) {
+		//cout << i << endl;
 		currPlace = parseResourceRecord(currPlace, dp, 2);
+		//cout << "@" << endl;
 	}
+	//cout << "$" << endl;
 }
 
 /*
@@ -202,6 +173,11 @@ char* Client::parseHeader(char *responseBuffer, DNSPacket *dp) {
 	result.ancount = ntohs(result.ancount);
 	result.nscount = ntohs(result.nscount);
 	result.arcount = ntohs(result.arcount);
+
+	if (result.rcode == 3) {
+		cout << "NXDOMAIN -- Requested domain does not exist." << endl;
+		exit(0);
+	}
 	dp->setHeader(result);
 	dp->setNumberOfQuestions(result.qdcount);
 	dp->setNumberOfAnswers(result.ancount);
@@ -242,26 +218,22 @@ char* Client::parseQuestion(char *startBuffer, DNSPacket *dp) {
 *	rrtype: 0 = Answer, 1 = Authority, 2 = Additional
 */
 char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) {
+	//cout << *startBuffer << endl;
 	ResourceRecord result;
 
 	string name = "";
-	int ctr = 0; // counts how many to offset
 	bool isPtr = false;
-	cout << endl;
-	PrintHex(startBuffer, 10);
+
 	char *currPtr = startBuffer;
 	while (*currPtr != '\0') {
 		if (*currPtr == (char) 192) {
 			// It's a pointer
-	//		cout << "POINTER" << endl;
 			isPtr = true;
 			unsigned int offset = (unsigned char) *(currPtr+1);
-	//		cout << "offset: " << offset << endl;
 			currPtr = responseBuffer+offset;
 		}
 		else {
 			name += *currPtr;				
-			//name += " ";
 			currPtr++;
 		}
 	}
@@ -271,33 +243,6 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	else {
 		startBuffer = currPtr;
 	}
-	//cout << (int) ctr << endl;
-	//startBuffer+=ctr;
-	//cout << "name: " << name << endl;
-	cout << *startBuffer << endl;
-	//PrintHex(startBuffer, 10);
-	// if (*startBuffer == (char) 192) {
-	// 	//cout << "NO" << endl;
-	// 	//startBuffer += 2;
-	// 	unsigned int x = startBuffer++;
-	// 	cout << "x: " << x << endl;
-	// 	// START HERE: PARSING POINTERS
-	// 	char *tempBuffer = responseBuffer+x;
-	// 	while (*tempBuffer != '\0') {
-	// 		name += *tempBuffer;
-	// 		tempBuffer++;
-	// 	}
-	// 	startBuffer++;
-	// }
-	// else {
-	// 	//cout << "YES" << endl;
-	// 	while (*startBuffer != '\0') {
-	// 		name += startBuffer[ctr];
-	// 		ctr++;
-	// 		startBuffer++;
-	// 	}
-	// 	startBuffer++;
-	// }
 
 	memcpy(&result.type, startBuffer, sizeof(result.type));
 	memcpy(&result.rclass, startBuffer+2, sizeof(result.rclass));
@@ -311,13 +256,44 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	result.rdlength = ntohs(result.rdlength);
 
 	unsigned char rdata[100];
+	//unsigned char *rdata0 = new unsigned char[100];
+	memset(&rdata, 0, sizeof(rdata));
 
-	for (short i = 0; i < result.rdlength; i++) {
-		rdata[i] = *startBuffer;
-		startBuffer++;
+	if (!(result.type == 5)) {
+		for (unsigned int i = 0; i < result.rdlength; i++) {
+			rdata[i] = *startBuffer;
+			startBuffer++;
+		}
+		rdata[result.rdlength] = '\0';
 	}
-	rdata[result.rdlength] = '\0';
+	else {
+		currPtr = startBuffer;
+		int j = 0;
+		while (*currPtr != '\0') {
+			if (*currPtr == (char) 192) {
+				// It's a pointer
+				isPtr = true;
+				unsigned int offset = (unsigned char) *(currPtr+1);
+				currPtr = responseBuffer+offset;
+			}
+			else {			
+				rdata[j] = *currPtr;
+				j++;
+				currPtr++;
+			}
+		}
+		if (isPtr) {
+			startBuffer+=2;
+		}
+		else {
+			startBuffer = currPtr;
+		}
+	}
+	//memcpy(&rdata0, rdata, sizeof(ra))
 
+	// char *ipv6 = new char[100];
+	// inet_ntop(AF_INET6, &rdata, ipv6, INET6_ADDRSTRLEN);
+	// cout << ipv6 << endl;
 	DNSResourceRecord *rr = new DNSResourceRecord();
 
 	rr->setName(DNSToName(name));
@@ -325,21 +301,27 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 	rr->setClass(result.rclass);
 	rr->setTTL(result.ttl);
 	rr->setRdlength(result.rdlength);
-	rr->setRdata(rdata);
+	// if (result.type == 28) {
+	// 	rr->setRdataAsIPv6(rdata);
+	// }
+	// else {
+	rr->setRdata(rdata);	
+	//}
+	
+	//rr->rRdata = rdata;
+	
 
+	//cout << "here0" << endl;
 	if (rrtype == 0) {
-		//dp->addAnswer(result);
 		dp->addDNSAnswer(*rr);
 	}
 	else if (rrtype == 1) {
-		//dp->addAuthority(result);
 		dp->addDNSAuthority(*rr);
 	}
 	else if (rrtype == 2) {
-		//dp->addAdditional(result);
 		dp->addDNSAdditional(*rr);
 	}
-
+	//cout << "here1" << endl;
 	return startBuffer;
 }
 
@@ -348,7 +330,6 @@ char* Client::parseResourceRecord(char *startBuffer, DNSPacket *dp, int rrtype) 
 *	Ex: www.google.com --> 3www6google3com
 */
 char* Client::nameToDNS(char *domainName) {
-	tempName = new char;
 	tempName[0] = '.';
 	strcat(tempName, domainName);
 	int ctr = 0;
@@ -385,7 +366,11 @@ char* Client::nameToDNS(char *domainName) {
 string Client::DNSToName(string dnsName) {
 	string newName = "";
 	unsigned int i = 0;
-	
+
+	if (dnsName.at(dnsName.length()-1) == '.') {
+		dnsName.pop_back();
+	}
+
 	while (i < dnsName.length()) {
 		int num = (int) dnsName.at(i);
 		dnsName = dnsName.replace(i, 1, ".");
@@ -393,6 +378,7 @@ string Client::DNSToName(string dnsName) {
 		i += num;
 		i++;
 	}
+	dnsName += '\0';
 	newName = dnsName.substr(1);
 	return newName;
 }
