@@ -19,9 +19,11 @@ www.opensooq.com
 www.colostate.edu
 www.nlnetlabs.nl
 
-We only got IPv4 working flawlessly. IPv6 works for some cases:
+We only got IPv4 working. IPv6 works for some cases:
 www.google.com
 www.nlnetlabs.nl
+
+We didn't get RRSIG working either.
 
 
 
